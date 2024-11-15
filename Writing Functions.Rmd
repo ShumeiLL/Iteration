@@ -167,6 +167,26 @@ y = 2
 f(x = y)
 ```
 
+## Functions as arguments
+
+```{r}
+x_vec = rnorm(25, 0, 1)
+
+my_summary = function(x, summ_func) {
+  summ_func(x)
+}
+
+mean(x_vec)
+var(x_vec)
+
+my_summary(x_vec, sd)
+
+my_summary(x_vec, IQR)
+
+my_summary(x_vec, var)
+
+my_summary(x_vec, mean)
+```
 
 
 
