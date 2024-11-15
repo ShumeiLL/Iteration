@@ -190,15 +190,3 @@ my_summary(x_vec, mean)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-

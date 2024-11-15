@@ -1,0 +1,103 @@
+---
+title: "simulation"
+author: "Shumei Liu"
+date: "2024-11-14"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(rvest)
+```
+
+## Simulation: Mean and SD for one 𝑛
+
+```{r}
+sim_mean_sd = function(n, mu = 2, sigma = 3) {
+  
+  sim_data = tibble(
+    x = rnorm(n, mean = mu, sd = sigma),
+  )
+  
+  sim_data |> 
+    summarize(
+      mu_hat = mean(x),
+      sigma_hat = sd(x)
+    )
+}
+```
+
+```{r}
+sim_mean_sd(30)
+```
+
+## simulate a lot
+
+start with a for loop
+```{r}
+output = vector("list", 100)
+
+for (i in 1:100) {
+  output[[i]] = sim_mean_sd(30)
+}
+
+sim_results = bind_rows(output)
+```
+
+Let's use a loop function.
+
+```{r}
+sim_results = 
+  rerun(100, sim_mean_sd(30)) |>
+  bind_rows()
+```
+
+```{r}
+sim_results_df = 
+  expand_grid(
+    sample_size = 30,
+    iter = 1:100
+  ) |> 
+  mutate(
+    estimate_df = map(sample_size, sim_mean_sd)
+  ) |> 
+  unnest(estimate_df)
+```
+
+Let's look at results.
+
+```{r}
+sim_results_df |> 
+  ggplot(aes(x = mu_hat)) + 
+  geom_density()
+```
+
+```{r}
+sim_results_df |> 
+  pivot_longer(
+    mu_hat:sigma_hat,
+    names_to = "parameter", 
+    values_to = "estimate") |> 
+  group_by(parameter) |> 
+  summarize(
+    emp_mean = mean(estimate),
+    emp_sd = sd(estimate)) |> 
+  knitr::kable(digits = 3)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
