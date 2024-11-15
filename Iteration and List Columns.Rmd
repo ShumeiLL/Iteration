@@ -100,6 +100,22 @@ for (i in 1:4) {
 output
 ```
 
+## `map`
+
+```{r}
+output = map(list_norms, mean_and_sd) #list_norms to keep the name of each distribution
+
+output
+```
+
+what if you want a different function?
+
+```{r}
+output = map(list_norms, median)
+
+output
+```
+
 
 
 
