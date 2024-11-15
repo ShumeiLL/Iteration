@@ -22,14 +22,16 @@ I want a function to compute z-scores
 
 ```{r}
 z_scores = function(x) {
+  
   if (!is.numeric(x)) {
-    stop("Input must be numeric")
+    stop("Argument x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Z scores cannot be computed for length 1 vectors")
   }
-  if (length(x) < 3) {
-    stop("Input must have at least three numbers")
-  }
-  z = (x-mean(x)) / sd(x)
-  return(z)
+  
+  z = mean(x) / sd(x)
+  
+  z
 }
 
 z_scores(x_vec)
@@ -48,16 +50,18 @@ z_scores(c(TRUE, TRUE, FALSE, TRUE)) #sequence with 0 and 1
 
 ```{r}
 mean_and_sd = function(x) {
+  
   if (!is.numeric(x)) {
-    stop("Input must be numeric")
+    stop("Argument x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Cannot be computed for length 1 vectors")
   }
-  if (length(x) < 3) {
-    stop("Input must have at least three numbers")
-  }
+  
   mean_x = mean(x)
   sd_x = sd(x)
+
   tibble(
-    mean = mean_x,
+    mean = mean_x, 
     sd = sd_x
   )
 }
@@ -72,40 +76,82 @@ mean_and_sd(x_vec)
 
 ## Multiple inputs 
 
-I'd like to do this with a function.
-
 ```{r}
-sim_data = 
-  tibble(
-    x = rnorm(100, mean = 4, sd = 3)
-  )
-
-sim_data |>
-  summarize(
-    mean = mean(x),
-    sd = sd(x)
-  )
-```
-
-```{r}
-sim_mean_sd = function(samp_size, mu, sigma) {
-  sim_data = 
-    tibble(
-      x = rnorm(n = samp_size, mean = mu, sd = sigma)
+sim_mean_sd = function(n, mu = 2, sigma = 3) {
+  
+  sim_data = tibble(
+    x = rnorm(n, mean = mu, sd = sigma),
   )
   
-  sim_data |>
-  summarize(
-    mean = mean(x),
-    sd = sd(x)
-  )
+  sim_data |> 
+    summarize(
+      mu_hat = mean(x),
+      sigma_hat = sd(x)
+    )
 }
 
-sim_mean_sd(100, 6, 3)
+sim_mean_sd(100, 2, 5)
 ```
 
+## Revisiting past examples
 
+```{r}
+nsduh_url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
 
+nsduh_html = read_html(nsduh_url)
+
+data_marj = 
+  nsduh_html |> 
+  html_table() |> 
+  nth(1) |>
+  slice(-1) |> 
+  select(-contains("P Value")) |>
+  pivot_longer(
+    -State,
+    names_to = "age_year", 
+    values_to = "percent") |>
+  separate(age_year, into = c("age", "year"), sep = "\\(") |>
+  mutate(
+    year = str_replace(year, "\\)", ""),
+    percent = str_replace(percent, "[a-c]$", ""),
+    percent = as.numeric(percent)) |>
+  filter(!(State %in% c("Total U.S.", "Northeast", "Midwest", "South", "West")))
+```
+
+```{r}
+nsduh_table <- function(html, table_num, table_name) {
+  
+  table = 
+    html |> 
+    html_table() |> 
+    nth(table_num) |>
+    slice(-1) |> 
+    select(-contains("P Value")) |>
+    pivot_longer(
+      -State,
+      names_to = "age_year", 
+      values_to = "percent") |>
+    separate(age_year, into = c("age", "year"), sep = "\\(") |>
+    mutate(
+      year = str_replace(year, "\\)", ""),
+      percent = str_replace(percent, "[a-c]$", ""),
+      percent = as.numeric(percent),
+      name = table_name) |>
+    filter(!(State %in% c("Total U.S.", "Northeast", "Midwest", "South", "West")))
+  
+  table
+  
+}
+```
+
+```{r}
+nsduh_results = 
+  bind_rows(
+    nsduh_table(nsduh_html, 1, "marj_one_year"),
+    nsduh_table(nsduh_html, 4, "cocaine_one_year"),
+    nsduh_table(nsduh_html, 5, "heroin_one_year")
+  )
+```
 
 
 
