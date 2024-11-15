@@ -180,9 +180,126 @@ listcol_df =
 listcol_df
 ```
 
+## Revisiting NSDUH
 
+```{r}
+nsduh_table <- function(html, table_num) {
+  
+  table = 
+    html |> 
+    html_table() |> 
+    nth(table_num) |>
+    slice(-1) |> 
+    select(-contains("P Value")) |>
+    pivot_longer(
+      -State,
+      names_to = "age_year", 
+      values_to = "percent") |>
+    separate(age_year, into = c("age", "year"), sep = "\\(") |>
+    mutate(
+      year = str_replace(year, "\\)", ""),
+      percent = str_replace(percent, "[a-c]$", ""),
+      percent = as.numeric(percent)) |>
+    filter(!(State %in% c("Total U.S.", "Northeast", "Midwest", "South", "West")))
+  
+  table
+}
+```
 
+```{r}
+nsduh_url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
 
+nsduh_html = read_html(nsduh_url)
 
+output = vector("list", 3)
 
+for (i in c(1, 4, 5)) {
+  output[[i]] = nsduh_table(nsduh_html, i)
+}
+
+nsduh_results = bind_rows(output)
+```
+
+```{r}
+nsduh_results = 
+  map(c(1, 4, 5), nsduh_table, html = nsduh_html) |> 
+  bind_rows()
+```
+
+```{r}
+nsduh_results = 
+  tibble(
+    name = c("marj", "cocaine", "heroine"),
+    number = c(1, 4, 5)) |> 
+  mutate(table = map(number, \(num) nsduh_table(html = nsduh_html, num))) |> 
+  unnest(cols = "table")
+```
+
+## Operations on nested data
+
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USW00022534", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2021-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = recode(
+      id, 
+      USW00094728 = "CentralPark_NY", 
+      USW00022534 = "Molokai_HI",
+      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+```
+
+```{r}
+weather_nest = 
+  nest(weather_df, data = date:tmin)
+
+weather_nest #create three list of three station
+```
+
+```{r}
+weather_nest |> pull(name)
+
+weather_nest |> pull(data)
+
+weather_nest$data[[1]]
+```
+
+```{r}
+unnest(weather_nest, cols = data) #unnest
+```
+
+suppose I want to regress `tmax` on `tmin` for each station.
+
+```{r}
+weather_lm = function(df) {
+  lm(tmax ~ tmin, data = df)
+}
+
+weather_lm(weather_nest$data[[1]])
+```
+
+```{r}
+map(weather_nest$data, weather_lm)
+```
+
+```{r}
+map(weather_nest$data, \(df) lm(tmax ~ tmin, data = df))
+```
+for short operations, use `\(df)` to indicate that same function.
+
+a map in a list column
+
+```{r}
+weather_nest = 
+  weather_nest |> 
+  mutate(models = map(data, weather_lm))
+
+weather_nest
+```
 
