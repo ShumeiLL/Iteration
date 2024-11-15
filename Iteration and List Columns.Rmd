@@ -133,6 +133,55 @@ output = map_dfr(list_norms, mean_and_sd, .id = "input")
 output
 ```
 
+```{r}
+# output = map2(input_1, input_2, \(x,y) func(arg_1 = x, arg_2 = y)), two arguments
+```
+
+## List columns and operations
+
+```{r}
+listcol_df = 
+  tibble(
+    name = c("a", "b", "c", "d"),
+    samp = list_norms
+  )
+```
+
+```{r}
+listcol_df |> pull(name)
+```
+
+```{r}
+listcol_df |> pull(samp)
+```
+
+Let's try some operations.
+
+```{r}
+listcol_df$samp[[1]]
+```
+
+```{r}
+mean_and_sd(listcol_df$samp[[1]])
+```
+
+```{r}
+map(listcol_df$samp, mean_and_sd)
+```
+
+add a list column
+
+```{r}
+listcol_df = 
+  listcol_df |> 
+  mutate(summary = map(samp, mean_and_sd),
+         medians = map_dbl(samp, median))
+  
+listcol_df
+```
+
+
+
 
 
 
