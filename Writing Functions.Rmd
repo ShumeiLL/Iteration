@@ -153,6 +153,19 @@ nsduh_results =
   )
 ```
 
+## Scoping范围 and names
+
+```{r}
+f = function(x) {
+  z = x + y
+  z
+}
+
+x = 1
+y = 2
+
+f(x = y)
+```
 
 
 
