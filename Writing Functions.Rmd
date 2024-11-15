@@ -1,0 +1,69 @@
+---
+title: "Writing Functions"
+author: "Shumei Liu"
+date: "2024-11-14"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(rvest)
+```
+
+## Do something simple
+
+```{r}
+x_vec = rnorm(30, mean = 5, sd = 3)
+
+(x_vec - mean(x_vec)) / sd(x_vec) #z-score
+```
+
+I want a function to compute z-scores
+
+```{r}
+z_scores = function(x) {
+  if (!is.numeric(x)) {
+    stop("Input must be numeric")
+  }
+  if (length(x) < 3) {
+    stop("Input must have at least three numbers")
+  }
+  z = (x-mean(x)) / sd(x)
+  return(z)
+}
+
+z_scores(x_vec)
+```
+
+Try my function on some other things. These should give errors.
+
+```{r, error=TRUE}
+z_scores(3) #sd(3) = NA
+z_scores("My name is Shumei") #cannot get the mean of character
+z_scores(mtcars) #cannot get the mean of a dataset
+z_scores(c(TRUE, TRUE, FALSE, TRUE)) #sequence with 0 and 1
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
