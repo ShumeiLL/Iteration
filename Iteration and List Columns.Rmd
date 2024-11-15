@@ -116,8 +116,22 @@ output = map(list_norms, median)
 output
 ```
 
+## `map` variants变体
 
+```{r}
+output = map_dbl(list_norms, median, .id = "input")
 
+output
+```
+We use `map_dbl` because median outputs a single numeric value each time; the result is a vector instead of a list. Using the `.id` argument keeps the names of the elements in the input list.
+
+If we tried to use `map_int` or `map_lgl`, we’d get an error because the output of median isn’t a integer or a logical.
+
+```{r}
+output = map_dfr(list_norms, mean_and_sd, .id = "input") 
+
+output
+```
 
 
 

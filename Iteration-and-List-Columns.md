@@ -60,8 +60,8 @@ l
     ## [1]  TRUE FALSE
     ## 
     ## $summary
-    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ## -3.00389 -0.75938 -0.06061 -0.08531  0.63024  3.20737
+    ##      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+    ## -3.806669 -0.668113 -0.037412 -0.008773  0.678443  3.157982
 
 ``` r
 l$vec_numeric
@@ -135,16 +135,16 @@ mean_and_sd(list_norms[[1]])
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  3.34 0.854
+    ## 1  3.14  1.23
 
 ``` r
 mean_and_sd(list_norms[[2]])
 ```
 
     ## # A tibble: 1 × 2
-    ##    mean    sd
-    ##   <dbl> <dbl>
-    ## 1 0.732  4.96
+    ##     mean    sd
+    ##    <dbl> <dbl>
+    ## 1 -0.917  3.49
 
 ``` r
 mean_and_sd(list_norms[[3]])
@@ -153,7 +153,7 @@ mean_and_sd(list_norms[[3]])
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  9.95 0.222
+    ## 1  9.98 0.172
 
 ``` r
 mean_and_sd(list_norms[[4]])
@@ -162,7 +162,7 @@ mean_and_sd(list_norms[[4]])
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1 -2.80 0.772
+    ## 1 -2.71  1.06
 
 Let’s use a `for` loop.
 
@@ -180,25 +180,25 @@ output
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  3.34 0.854
+    ## 1  3.14  1.23
     ## 
     ## [[2]]
     ## # A tibble: 1 × 2
-    ##    mean    sd
-    ##   <dbl> <dbl>
-    ## 1 0.732  4.96
+    ##     mean    sd
+    ##    <dbl> <dbl>
+    ## 1 -0.917  3.49
     ## 
     ## [[3]]
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  9.95 0.222
+    ## 1  9.98 0.172
     ## 
     ## [[4]]
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1 -2.80 0.772
+    ## 1 -2.71  1.06
 
 ## `map`
 
@@ -212,25 +212,25 @@ output
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  3.34 0.854
+    ## 1  3.14  1.23
     ## 
     ## $b
     ## # A tibble: 1 × 2
-    ##    mean    sd
-    ##   <dbl> <dbl>
-    ## 1 0.732  4.96
+    ##     mean    sd
+    ##    <dbl> <dbl>
+    ## 1 -0.917  3.49
     ## 
     ## $c
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  9.95 0.222
+    ## 1  9.98 0.172
     ## 
     ## $d
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1 -2.80 0.772
+    ## 1 -2.71  1.06
 
 what if you want a different function?
 
@@ -241,13 +241,45 @@ output
 ```
 
     ## $a
-    ## [1] 3.305282
+    ## [1] 3.240454
     ## 
     ## $b
-    ## [1] 0.8497591
+    ## [1] -0.5878094
     ## 
     ## $c
-    ## [1] 9.978548
+    ## [1] 9.954316
     ## 
     ## $d
-    ## [1] -2.786282
+    ## [1] -2.760741
+
+## `map` variants变体
+
+``` r
+output = map_dbl(list_norms, median, .id = "input")
+
+output
+```
+
+    ##          a          b          c          d 
+    ##  3.2404544 -0.5878094  9.9543158 -2.7607409
+
+We use `map_dbl` because median outputs a single numeric value each
+time; the result is a vector instead of a list. Using the `.id` argument
+keeps the names of the elements in the input list.
+
+If we tried to use `map_int` or `map_lgl`, we’d get an error because the
+output of median isn’t a integer or a logical.
+
+``` r
+output = map_dfr(list_norms, mean_and_sd, .id = "input") 
+
+output
+```
+
+    ## # A tibble: 4 × 3
+    ##   input   mean    sd
+    ##   <chr>  <dbl> <dbl>
+    ## 1 a      3.14  1.23 
+    ## 2 b     -0.917 3.49 
+    ## 3 c      9.98  0.172
+    ## 4 d     -2.71  1.06
